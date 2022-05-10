@@ -1,6 +1,6 @@
 # Training-Tao-Toolkit-Yolov4-Tutorial
 
-Trong tutorial này mình sẽ đề cập đến việc training model Yolov4 trên TLT.
+Trong tutorial này mình sẽ đề cập đến việc tạo dữ liệu, training, export model Yolov4 trên TLT.
 
 ## 1. DataSet
 
@@ -91,7 +91,7 @@ Please use following anchor sizes in YOLO config:
 (45.75, 45.79)
 ```
 ### 2.2 Setup training 
-- Download pretrained object detection tại: https://catalog.ngc.nvidia.com/orgs/nvidia/teams/tao/models/pretrained_object_detection/files?version=resnet18 (tạo account Nvidia và download)
+- Download pretrained object detection tại: [Pretrain_resnet18](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/tao/models/pretrained_object_detection/files?version=resnet18) (tạo account Nvidia và download)
 - Tạo file ```config_train_resnet18.txt``` như sau (có thể thay các anchors ở **bước 2.1**):
 
 ```
