@@ -59,7 +59,7 @@ pedestrian 0.00 0 0.00 423.17 173.67 433.17 224.03 0.00 0.00 0.00 0.00 0.00 0.00
 python3 convert_data.py
 ```
 
-- Với ảnh có kích thước: 921*541, gán nhãn bằng [LabelTool](https://github.com/tzutalin/labelImg) là ```3 0.763844 0.444547 0.079262 0.083179``` trở thành ```ford 0.00 0 0.00 663.12 216.40 736.80 259.68 0.00 0.00 0.00 0.00 0.00 0.00 0.00```
+- **Ví dụ**: với ảnh có kích thước: 921*541, gán nhãn bằng [LabelTool](https://github.com/tzutalin/labelImg) là ```3 0.763844 0.444547 0.079262 0.083179``` trở thành ```ford 0.00 0 0.00 663.12 216.40 736.80 259.68 0.00 0.00 0.00 0.00 0.00 0.00 0.00```
   
 :)))) Okay! Vậy là ta đã có data phục vụ cho việc training. À, với yolov4 TLT thường sẽ sử dụng phương pháp augmentations offline để tăng độ đa dạng cho ảnh nhé (Bạn đọc có thể cân nhắc sử dụng thư viện [Albumentations](https://albumentations.ai/) cho đa dạng thay vì torchtransform :v).
 
