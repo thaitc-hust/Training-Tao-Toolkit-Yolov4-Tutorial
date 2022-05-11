@@ -562,3 +562,7 @@ Trong đó:
 - ```-e```             : đường dẫn file config 
 - ```-cal_cache_file```: đường dẫn output sau khi calibration 
 - ```-cal_image_dir``` : đường dẫn directory hình ảnh dùng để calibration (thường là 1000 ảnh hoặc folder training)
+
+## Reference 
+- Tao Toolkit Yolov4: https://docs.nvidia.com/tao/tao-toolkit/text/object_detection/yolo_v4.html
+- Github: https://github.com/NNDam/AI-Engineer-Note/tree/master/Deploy/Transfer-Learning-Toolkit
