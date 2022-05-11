@@ -56,7 +56,7 @@ pedestrian 0.00 0 0.00 423.17 173.67 433.17 224.03 0.00 0.00 0.00 0.00 0.00 0.00
 - *Lưu ý ở đây:* ```<xmin-ymin-xmax-ymax>``` để ở dạng tuyệt đối thay vì tương đối như ta thường training yolov4 hay yolov5 (thường được gán nhãn bằng tool [LabelTool](https://github.com/tzutalin/labelImg)). Vì vậy ta cần convert dữ liệu từ tương đối sang dạng tuyệt đối. Mình converrt bằng đoạn transcript mà mình đã viết như sau sau:
 
 ```
-def xywhn2xyxy(x, w=weight, h=height, padw=0, padh=0):
+def xywhn2xyxy(x, w=width, h=height, padw=0, padh=0):
     # Convert nx4 boxes from [x, y, w, h] normalized to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
     #y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
     # x: data frame label from LabelTool
