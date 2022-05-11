@@ -56,10 +56,31 @@ pedestrian 0.00 0 0.00 423.17 173.67 433.17 224.03 0.00 0.00 0.00 0.00 0.00 0.00
 - *Lưu ý ở đây:* ```<xmin-ymin-xmax-ymax>``` để ở dạng tuyệt đối thay vì tương đối như ta thường training yolov4 hay yolov5 (thường được gán nhãn bằng tool [LabelTool](https://github.com/tzutalin/labelImg)). Vì vậy ta cần convert dữ liệu từ tương đối sang dạng tuyệt đối. Mình converrt bằng đoạn transcript mà mình đã viết như sau sau:
 
 ```
-python3 convert_data.py
-```
+def xywhn2xyxy(x, w=weight, h=height, padw=0, padh=0):
+    # Convert nx4 boxes from [x, y, w, h] normalized to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
+    #y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
+    # x: data frame label from LabelTool
+    # w, h: image shape.
+    y = x.iloc[0:0]
+    y['class'] = x['class']
+    y['xmin'] = w * (x['xmin'] - x['xmax'] / 2) + padw  # top left x
+    y['ymin'] = h * (x['ymin'] - x['ymax'] / 2) + padh  # top left y
 
-- **Ví dụ**: với ảnh có kích thước: 921*541, gán nhãn bằng [LabelTool](https://github.com/tzutalin/labelImg) là ```3 0.763844 0.444547 0.079262 0.083179``` trở thành ```ford 0.00 0 0.00 663.12 216.40 736.80 259.68 0.00 0.00 0.00 0.00 0.00 0.00 0.00```
+    y['xmax'] = w * (x['xmin'] + x['xmax'] / 2) + padw  # bottom right x
+    y['ymax'] = h * (x['ymin'] + x['ymax'] / 2) + padh  # bottom right y
+    y = y.fillna(0)
+    return y
+```
+- Hoặc chạy trực tiếp từ: 
+```
+python3 convert_data.py --dir_img path_images --dir_label path_labels --dir_txt path_save_label_convert --dir_class dir_file_names_class
+```
+Trong đó:
+- ```--dir_img```: đường dẫn thư mục hình ảnh training
+- ```--dir_label```: đường dẫn thư mục nhãn tương ứng của hình ảnh
+- ```--dir_txt```: đường dẫn thư mục lưu file nhãn mới sau convert
+- ```--dir_class```: file tên class class.names(tương tự file coco.names trong yolov5)
+- **Ví dụ**: với ảnh có kích thước: 921*541, gán nhãn bằng [LabelTool](https://github.com/tzutalin/labelImg) là ```3 0.763844 0.444547 0.079262 0.083179``` convert về dạng: ```ford 0.00 0 0.00 0.763844 0.444547 0.079262 0.083179 0.00 0.00 0.00 0.00 0.00 0.00 0.00``` và trở thành ```ford 0.00 0 0.00 663.12 216.40 736.80 259.68 0.00 0.00 0.00 0.00 0.00 0.00 0.00```.
   
 :)))) Okay! Vậy là ta đã có data phục vụ cho việc training. À, với yolov4 TLT thường sẽ sử dụng phương pháp augmentations offline để tăng độ đa dạng cho ảnh nhé (Bạn đọc có thể cân nhắc sử dụng thư viện [Albumentations](https://albumentations.ai/) cho đa dạng thay vì torchtransform :v).
 
@@ -444,6 +465,10 @@ docker run -it \
 2022-01-18 02:39:38,593 [INFO] __main__: Pruning ratio (pruned model / original model): 0.26947645427472383
 ```
 Model pruned của mình có kích thước 22.256.768, nhỏ hơn 10 lần so với model gốc 243.042.320, còn số lượng tham số bằng **0.269** tham số model gốc, tuy nhiên tiến hành evaluate độ chính xác bị giảm rất nhiều (chỉ số ```pth (threshold)``` càng lớn thì pruned model càng nhỏ, độ chính xác giảm càng nhiều)
+
+Trong đó: 
+- ```-o```: đường dẫn lưu model pruned
+- ```-pth```: chỉ số threshold
 ```
 pth = 0.7
 *******************************
@@ -490,6 +515,18 @@ top_right     AP    0.90664
 - ```pruned_model_path```: đường dẫn tới pruned model ở bước 4
 - Thêm ```enable_qat=true``` vào ```training_config```
 - ```type``` của ```regularizer``` nên để là ```NO_REG``` để pruned model hội tụ tốt hơn về phía model gốc
+
+=> file config mới cho retrain: config_retrain_resnet18.txt
+
+Retrain:
+```
+docker run -it \
+    --gpus device=0 \
+    -v <path-to-exp-dir>:/yolov4 \
+    nvcr.io/nvidia/tao/tao-toolkit-tf:v3.21.11-tf1.15.5-py3 \
+    yolo_v4 train -r /yolov4/result_retrain -e /yolov4/config_retrain_resnet18.txt -k car-logo
+```
+
 ```
 *******************************
 bottom_left   AP    0.9083
@@ -501,3 +538,27 @@ top_right     AP    0.90748
 *******************************
 Validation loss: 50.97076883824268
 ```
+## 6.Export model
+
+Ta tiến hành export model về INT8 Mode như sau: 
+```
+docker run -it  \
+        --gpus device=3 \
+        -v <path-to-exp-dir>:/yolov4 \
+        nvcr.io/nvidia/tao/tao-toolkit-tf:v3.21.11-tf1.15.5-py3 \
+        yolo_v4 export \
+        -m /yolov4/result_retrain/weights/yolov4_resnet18_epoch_040.tlt \
+        -o /yolov4/export/yolov4_resnet18_epoch_40_int8.etlt \
+        -k car-logo \
+        --data_type int8 \
+        -e /yolov4/config_retrain_resnet18.txt \
+        --cal_cache_file /yolov4/export/cal.bin \
+        --cal_image_dir /yolov4/dataset/train/images\
+```
+Trong đó: 
+- ```-m```             : đường dẫn model sử dụng export
+- ```-o```             : đường dẫn lưu model sau export
+- ```-data_type```     : mode export (int8, fp16, fp32)
+- ```-e```             : đường dẫn file config 
+- ```-cal_cache_file```: đường dẫn output sau khi calibration 
+- ```-cal_image_dir``` : đường dẫn directory hình ảnh dùng để calibration (thường là 1000 ảnh hoặc folder training)
