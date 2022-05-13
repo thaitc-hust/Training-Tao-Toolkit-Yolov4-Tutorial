@@ -1,6 +1,6 @@
 # Training-Tao-Toolkit-Yolov4-Tutorial
 
-Trong tutorial này mình sẽ đề cập đến việc tạo dữ liệu, training, export model Yolov4 trên TLT.
+Trong document này mình sẽ đề cập đến việc tạo dữ liệu, training, export model Yolov4 trên TLT.
 
 ## 1. DataSet
 
